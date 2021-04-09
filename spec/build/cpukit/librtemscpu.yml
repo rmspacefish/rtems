@@ -157,7 +157,6 @@ install:
   - cpukit/include/rtems/rtems-rfs-shell.h
   - cpukit/include/rtems/rtems-rfs.h
   - cpukit/include/rtems/rtemsdialer.h
-  - cpukit/include/rtems/rtemspppd.h
   - cpukit/include/rtems/scheduler.h
   - cpukit/include/rtems/serdbg.h
   - cpukit/include/rtems/serdbgcnf.h
@@ -500,8 +499,6 @@ links:
   uid: objgnat
 - role: build-dependency
   uid: objmpci
-- role: build-dependency
-  uid: objnet
 - role: build-dependency
   uid: objpci
 - role: build-dependency
@@ -1280,7 +1277,6 @@ source:
 - cpukit/rtems/src/semsetpriority.c
 - cpukit/rtems/src/signalcatch.c
 - cpukit/rtems/src/signalsend.c
-- cpukit/rtems/src/status.c
 - cpukit/rtems/src/statustext.c
 - cpukit/rtems/src/statustoerrno.c
 - cpukit/rtems/src/systemeventreceive.c

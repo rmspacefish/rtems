@@ -1,16 +1,7 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
 
-/**
- * @file
- *
- * @ingroup RTEMSImplClassicObject
- *
- * @brief This source file contains the implementation of
- *   _RTEMS_Name_to_id().
- */
-
 /*
- * Copyright (C) 2020 embedded brains GmbH (http://www.embedded-brains.de)
+ * Copyright (C) 2021 Jan Sommer, German Aerospace Center (DLR)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,23 +25,43 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#ifndef LIBBSP_ARM_XILINX_AXI_SPI_H
+#define LIBBSP_ARM_XILINX_AXI_SPI_H
 
-#include <rtems/rtems/objectimpl.h>
-#include <rtems/rtems/statusimpl.h>
+#include <rtems.h>
 
-rtems_status_code _RTEMS_Name_to_id(
-  uint32_t                   name,
-  uint32_t                   node,
-  Objects_Id                *id,
-  const Objects_Information *information
-)
-{
-  Status_Control status;
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
-  status = _Objects_Name_to_id_u32( name, node, id, information );
+/** 
+ * Register Xilinx AXI SPI device
+ *
+ * Note:
+ *   The Xilinx Quad SPI device is very versatile and
+ *   supports many options. This driver assumes the 
+ *   following setup:
+ *     - Standard SPI mode and AXI Lite interface
+ *     - FIFO available (driver might also work without FIFOs)
+ *
+ * @param bus_path path for the new device node (e.g. "/dev/spi0")
+ * @param register_base base address of the device
+ * @param fifo_size Configured fifo size. Either 0, 16 or 256
+ * @param num_cs Number of configured CS lines (0-32)
+ *
+ * @return 0 on success. Negative number otherwise.
+ *
+ */
+int spi_bus_register_xilinx_axi(
+  const char *bus_path,
+  uintptr_t register_base,
+  uint32_t fifo_size,
+  uint32_t num_cs,
+  rtems_vector_number irq
+);
 
-  return _Status_Get( status );
+#ifdef __cplusplus
 }
+#endif /* __cplusplus */
+
+#endif /* LIBBSP_ARM_XILINX_AXI_SPI_H */

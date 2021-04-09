@@ -1,10 +1,10 @@
 SPDX-License-Identifier: CC-BY-SA-4.0 OR BSD-2-Clause
 arch: arm
-bsp: stm32h7
+bsp: nucleo-h743zi
 build-type: bsp
 cflags: []
 copyrights:
-- Copyright (C) 2020 embedded brains GmbH (http://www.embedded-brains.de)
+- Copyright (C) 2021 embedded brains GmbH (http://www.embedded-brains.de)
 cppflags: []
 enabled-by: true
 family: stm32h7

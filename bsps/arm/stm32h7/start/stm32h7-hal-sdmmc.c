@@ -1,14 +1,5 @@
 /* SPDX-License-Identifier: BSD-2-Clause */
 
-/**
- * @file
- *
- * @ingroup RTEMSImplClassicObject
- *
- * @brief This source file contains the implementation of
- *   _RTEMS_Name_to_id().
- */
-
 /*
  * Copyright (C) 2020 embedded brains GmbH (http://www.embedded-brains.de)
  *
@@ -38,19 +29,60 @@
 #include "config.h"
 #endif
 
-#include <rtems/rtems/objectimpl.h>
-#include <rtems/rtems/statusimpl.h>
+#include <stm32h7/hal.h>
 
-rtems_status_code _RTEMS_Name_to_id(
-  uint32_t                   name,
-  uint32_t                   node,
-  Objects_Id                *id,
-  const Objects_Information *information
-)
+static const stm32h7_gpio_config gpiob = {
+  .regs = GPIOB,
+  .config = {
+    .Pin = GPIO_PIN_8 | GPIO_PIN_9,
+    .Mode = GPIO_MODE_AF_PP,
+    .Pull = GPIO_NOPULL,
+    .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
+    .Alternate = GPIO_AF7_SDMMC1
+  }
+};
+
+static const stm32h7_gpio_config gpioc_af12 = {
+  .regs = GPIOC,
+  .config = {
+    .Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12,
+    .Mode = GPIO_MODE_AF_PP,
+    .Pull = GPIO_NOPULL,
+    .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
+    .Alternate = GPIO_AF12_SDMMC1
+  }
+};
+
+static const stm32h7_gpio_config gpioc_af8 = {
+  .regs = GPIOC,
+  .config = {
+    .Pin = GPIO_PIN_6 | GPIO_PIN_7,
+    .Mode = GPIO_MODE_AF_PP,
+    .Pull = GPIO_NOPULL,
+    .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
+    .Alternate = GPIO_AF8_SDMMC1
+  }
+};
+
+static const stm32h7_gpio_config gpiod = {
+  .regs = GPIOD,
+  .config = {
+    .Pin = GPIO_PIN_2,
+    .Mode = GPIO_MODE_AF_PP,
+    .Pull = GPIO_NOPULL,
+    .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
+    .Alternate = GPIO_AF12_SDMMC1
+  }
+};
+
+void
+HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 {
-  Status_Control status;
-
-  status = _Objects_Name_to_id_u32( name, node, id, information );
-
-  return _Status_Get( status );
+  stm32h7_clk_enable(STM32H7_MODULE_SDMMC1);
+  stm32h7_gpio_init(&gpiob);
+  stm32h7_gpio_init(&gpioc_af12);
+  stm32h7_gpio_init(&gpioc_af8);
+  stm32h7_gpio_init(&gpiod);
+  __HAL_RCC_SDMMC1_FORCE_RESET();
+  __HAL_RCC_SDMMC1_RELEASE_RESET();
 }

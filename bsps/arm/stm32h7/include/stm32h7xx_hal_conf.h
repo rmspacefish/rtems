@@ -23,6 +23,8 @@
 
 #ifdef __rtems__
 #include <bspopts.h>
+
+#define HSE_VALUE ((uint32_t)STM32H7_HSE_FREQUENCY)
 #endif /* __rtems__ */
 #ifdef __cplusplus
  extern "C" {

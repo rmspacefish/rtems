@@ -22,10 +22,6 @@ links:
 - role: build-dependency
   uid: libmghttpd
 - role: build-dependency
-  uid: libnfs
-- role: build-dependency
-  uid: libpppd
-- role: build-dependency
   uid: librtemscpu
 - role: build-dependency
   uid: librtemscxx
@@ -33,8 +29,6 @@ links:
   uid: librtemsdfltcfg
 - role: build-dependency
   uid: librtemstest
-- role: build-dependency
-  uid: libtelnetd
 - role: build-dependency
   uid: libtftpfs
 - role: build-dependency

@@ -35,27 +35,13 @@
 
 #include <stm32h7/hal.h>
 
-#if STM32H743ZI_NUCLEO == 1
+#include <bspopts.h>
+
 const stm32h7_uart_config stm32h7_usart3_config = {
   .gpio = {
-    .regs = GPIOD,
+    .regs = STM32H7_USART3_GPIO_REGS,
     .config = {
-      .Pin = GPIO_PIN_8 | GPIO_PIN_9,
-      .Mode = GPIO_MODE_AF_PP,
-      .Pull = GPIO_NOPULL,
-      .Speed = GPIO_SPEED_FREQ_LOW,
-      .Alternate = GPIO_AF7_USART3
-    }
-  },
-  .irq = USART3_IRQn,
-  .device_index = 2
-};
-#else
-const stm32h7_uart_config stm32h7_usart3_config = {
-  .gpio = {
-    .regs = GPIOB,
-    .config = {
-      .Pin = GPIO_PIN_9 | GPIO_PIN_10,
+      .Pin = STM32H7_USART3_GPIO_PINS,
       .Mode = GPIO_MODE_AF_PP,
       .Pull = GPIO_NOPULL,
       .Speed = GPIO_SPEED_FREQ_LOW,
