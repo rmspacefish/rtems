@@ -25,10 +25,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef __rtems__
-#include <bspopts.h>
-#endif
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -51,4 +47,3 @@ const stm32h7_uart_config stm32h7_usart3_config = {
   .irq = USART3_IRQn,
   .device_index = 2
 };
-#endif /*  STM32H743ZI_NUCLEO == 1 */
