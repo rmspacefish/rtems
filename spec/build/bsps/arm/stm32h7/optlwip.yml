@@ -10,11 +10,11 @@ format: '{}'
 links: []
 name: STM32H7_ADD_LWIP
 description: |
-  This changes the code to allow lwIP to work properly based on the STM32 lwIP example.
+  This flag allows lwIP to work properly based on the STM32 lwIP example.
   The user must take care of the following steps in the application:
    1. The lwIP DMA descriptors have to be placed into the .bsp_no_cache section instead
-      of custom sections
-   2. The sections need to be aligned to 32 bytes (0x20) boundaries
+      of custom sections.
+   2. The sections need to be aligned to 32 bytes (0x20) boundaries.
   This can be achieved by appending
     __attribute__((section(.bsp_no_cache),__aligned__(0x20)));
   to the descriptor definitions.
