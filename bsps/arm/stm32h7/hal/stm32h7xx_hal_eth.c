@@ -365,7 +365,7 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
   /*------------------ MAC, MTL and DMA default Configuration ----------------*/
   ETH_MACDMAConfig(heth);
 
-#if STM32H7_ADD_LWIP == 1
+#if RTEMS_USE_LWIP == 1
   /* SET DSL to 64 bit */
   MODIFY_REG(heth->Instance->DMACCR, ETH_DMACCR_DSL, ETH_DMACCR_DSL_64BIT);
 #endif
@@ -2651,7 +2651,7 @@ static void ETH_MAC_MDIO_ClkConfig(ETH_HandleTypeDef *heth)
   */
 static void ETH_DMATxDescListInit(ETH_HandleTypeDef *heth)
 {
-#if STM32H7_ADD_LWIP == 1
+#if RTEMS_USE_LWIP == 1
   ETH_DMADescTypeDef *dmatxdesc;
   uint32_t i;
 
@@ -2678,7 +2678,7 @@ static void ETH_DMATxDescListInit(ETH_HandleTypeDef *heth)
 
   /* Set Transmit Descriptor Tail pointer */
   WRITE_REG(heth->Instance->DMACTDTPR, (uint32_t) heth->Init.TxDesc);
-#endif /* STM32H7_ADD_LWIP == 1 */
+#endif /* RTEMS_USE_LWIP == 1 */
 }
 
 /**
@@ -2690,7 +2690,7 @@ static void ETH_DMATxDescListInit(ETH_HandleTypeDef *heth)
   */
 static void ETH_DMARxDescListInit(ETH_HandleTypeDef *heth)
 {
-#if STM32H7_ADD_LWIP == 1
+#if RTEMS_USE_LWIP == 1
   ETH_DMADescTypeDef *dmarxdesc;
   uint32_t i;
 
@@ -2723,7 +2723,7 @@ static void ETH_DMARxDescListInit(ETH_HandleTypeDef *heth)
 
   /* Set Receive Descriptor Tail pointer Address */
   WRITE_REG(heth->Instance->DMACRDTPR, ((uint32_t)(heth->Init.RxDesc + (((uint32_t)(ETH_RX_DESC_CNT - 1))*sizeof(ETH_DMADescTypeDef)))));
-#endif /* STM32H7_ADD_LWIP == 1 */
+#endif /* RTEMS_USE_LWIP == 1 */
 }
 
 /**

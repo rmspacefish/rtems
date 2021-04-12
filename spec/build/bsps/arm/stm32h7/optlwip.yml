@@ -8,7 +8,7 @@ default-by-variant: []
 enabled-by: true
 format: '{}'
 links: []
-name: STM32H7_ADD_LWIP
+name: RTEMS_USE_LWIP
 description: |
   This flag allows lwIP to work properly based on the STM32 lwIP example.
   The user must take care of the following steps in the application:
