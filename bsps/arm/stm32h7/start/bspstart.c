@@ -32,9 +32,10 @@
 
 #include <stm32h7xx_hal.h>
 
+/* Get number of milliseconds elapsed since startup */
 uint32_t HAL_GetTick(void)
 {
-  return rtems_clock_get_ticks_since_boot();
+  return (rtems_clock_get_ticks_since_boot() * 1000) / rtems_clock_get_ticks_per_second();
 }
 
 uint32_t stm32h7_systick_frequency(void)
