@@ -25,14 +25,6 @@
 #include "stm32h7xx_hal.h"
 #include <math.h>
 
-#ifdef __rtems__
-uint32_t HAL_GetTick_OscInit(void);
-#else
-uint32_t HAL_GetTick_OscInit(void) {
-  return HAL_GetTick();
-}
-#endif
-
 /** @addtogroup STM32H7xx_HAL_Driver
   * @{
   */
@@ -888,7 +880,7 @@ HAL_StatusTypeDef HAL_RCCEx_PeriphCLKConfig(const RCC_PeriphCLKInitTypeDef  *Per
     SET_BIT(PWR->CR1, PWR_CR1_DBP);
 
     /* Wait for Backup domain Write protection disable */
-    tickstart = HAL_GetTick_OscInit();
+    tickstart = HAL_GetTick();
 
     while((PWR->CR1 & PWR_CR1_DBP) == 0U)
     {
@@ -917,12 +909,12 @@ HAL_StatusTypeDef HAL_RCCEx_PeriphCLKConfig(const RCC_PeriphCLKInitTypeDef  *Per
       if(PeriphClkInit->RTCClockSelection == RCC_RTCCLKSOURCE_LSE)
       {
         /* Get Start Tick*/
-        tickstart = HAL_GetTick_OscInit();
+        tickstart = HAL_GetTick();
 
         /* Wait till LSE is ready */
         while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == 0U)
         {
-          if((HAL_GetTick_OscInit() - tickstart) > RCC_LSE_TIMEOUT_VALUE)
+          if((HAL_GetTick() - tickstart) > RCC_LSE_TIMEOUT_VALUE)
           {
             ret = HAL_TIMEOUT;
             break;
@@ -3234,7 +3226,7 @@ static HAL_StatusTypeDef RCCEx_PLL2_Config(const RCC_PLL2InitTypeDef *pll2, uint
     __HAL_RCC_PLL2_DISABLE();
 
     /* Get Start Tick*/
-    tickstart = HAL_GetTick_OscInit();
+    tickstart = HAL_GetTick();
 
     /* Wait till PLL is disabled */
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLL2RDY) != 0U)
@@ -3285,12 +3277,12 @@ static HAL_StatusTypeDef RCCEx_PLL2_Config(const RCC_PLL2InitTypeDef *pll2, uint
     __HAL_RCC_PLL2_ENABLE();
 
     /* Get Start Tick*/
-    tickstart = HAL_GetTick_OscInit();
+    tickstart = HAL_GetTick();
 
     /* Wait till PLL2 is ready */
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLL2RDY) == 0U)
     {
-      if( (HAL_GetTick_OscInit() - tickstart ) > PLL2_TIMEOUT_VALUE)
+      if( (HAL_GetTick() - tickstart ) > PLL2_TIMEOUT_VALUE)
       {
         return HAL_TIMEOUT;
       }
@@ -3338,11 +3330,11 @@ static HAL_StatusTypeDef RCCEx_PLL3_Config(const RCC_PLL3InitTypeDef *pll3, uint
     __HAL_RCC_PLL3_DISABLE();
 
     /* Get Start Tick*/
-    tickstart = HAL_GetTick_OscInit();
+    tickstart = HAL_GetTick();
     /* Wait till PLL3 is ready */
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLL3RDY) != 0U)
     {
-      if( (HAL_GetTick_OscInit() - tickstart ) > PLL3_TIMEOUT_VALUE)
+      if( (HAL_GetTick() - tickstart ) > PLL3_TIMEOUT_VALUE)
       {
         return HAL_TIMEOUT;
       }
@@ -3388,12 +3380,12 @@ static HAL_StatusTypeDef RCCEx_PLL3_Config(const RCC_PLL3InitTypeDef *pll3, uint
     __HAL_RCC_PLL3_ENABLE();
 
     /* Get Start Tick*/
-    tickstart = HAL_GetTick_OscInit();
+    tickstart = HAL_GetTick();
 
     /* Wait till PLL3 is ready */
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLL3RDY) == 0U)
     {
-      if( (HAL_GetTick_OscInit() - tickstart ) > PLL3_TIMEOUT_VALUE)
+      if( (HAL_GetTick() - tickstart ) > PLL3_TIMEOUT_VALUE)
       {
         return HAL_TIMEOUT;
       }

@@ -44,10 +44,6 @@ uint32_t stm32h7_systick_frequency(void)
   return SystemCoreClock;
 }
 
-uint32_t HAL_GetTick_OscInit(void) {
-  return (rtems_clock_get_ticks_since_boot() / rtems_clock_get_ticks_per_second()) * 1000;
-}
-
 void bsp_start(void)
 {
   bsp_interrupt_initialize();
