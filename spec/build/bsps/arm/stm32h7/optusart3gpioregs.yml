@@ -7,7 +7,6 @@ default-by-variant:
 - value: GPIOD
   variants:
   - arm/nucleo-h743zi
-default-by-variant: []
 enabled-by: true
 format: '{}'
 links: []
