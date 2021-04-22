@@ -31,6 +31,8 @@
 
 #include <stm32h7/hal.h>
 
+#include <bspopts.h>
+
 static const stm32h7_gpio_config gpiog = {
   .regs = GPIOG,
   .config = {
@@ -65,7 +67,7 @@ static const stm32h7_gpio_config gpioa = {
 };
 
 static const stm32h7_gpio_config gpiob = {
-  .regs = GPIOA,
+  .regs = GPIOB,
   .config = {
     .Pin = GPIO_PIN_13,
     .Mode = GPIO_MODE_AF_PP,
@@ -84,7 +86,7 @@ HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
   stm32h7_gpio_init(&gpiog);
   stm32h7_gpio_init(&gpioc);
   stm32h7_gpio_init(&gpioa);
-#if RTEMS_BSP == "nucleo-h743zi"
+#if RTEMS_BSP == nucleo-h743zi
   stm32h7_gpio_init(&gpiob);
 #endif
 }
