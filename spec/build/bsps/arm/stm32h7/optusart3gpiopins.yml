@@ -3,10 +3,6 @@ actions:
 - define-unquoted: null
 build-type: option
 default: ( GPIO_PIN_8 | GPIO_PIN_9 )
-default-by-variant:
-- value: ( GPIO_PIN_8 | GPIO_PIN_9 )
-  variants:
-  - arm/nucleo-h743zi
 enabled-by: true
 format: '{}'
 links: []

@@ -3,10 +3,6 @@ actions:
 - define-unquoted: null
 build-type: option
 default: GPIOD
-default-by-variant:
-- value: GPIOD
-  variants:
-  - arm/nucleo-h743zi
 enabled-by: true
 format: '{}'
 links: []
