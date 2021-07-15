@@ -9,44 +9,37 @@
 
 #include <grlib/apbuart.h>
 
-void apbuart_outbyte_polled(
-  struct apbuart_regs *regs,
-  unsigned char ch,
-  int do_cr_on_newline,
-  int wait_sent
-)
+#include <rtems/score/cpuimpl.h>
+
+void apbuart_outbyte_wait(const struct apbuart_regs *regs)
 {
-send:
   while ( (regs->status & APBUART_STATUS_TE) == 0 ) {
     /* Lower bus utilization while waiting for UART */
-    __asm__ volatile ("nop"::); __asm__ volatile ("nop"::);
-    __asm__ volatile ("nop"::); __asm__ volatile ("nop"::);
-    __asm__ volatile ("nop"::); __asm__ volatile ("nop"::);
-    __asm__ volatile ("nop"::); __asm__ volatile ("nop"::);
+    _CPU_Instruction_no_operation();
+    _CPU_Instruction_no_operation();
+    _CPU_Instruction_no_operation();
+    _CPU_Instruction_no_operation();
+    _CPU_Instruction_no_operation();
+    _CPU_Instruction_no_operation();
+    _CPU_Instruction_no_operation();
+    _CPU_Instruction_no_operation();
   }
+}
 
-  if ((ch == '\n') && do_cr_on_newline) {
-    regs->data = (unsigned int) '\r';
-    do_cr_on_newline = 0;
-    goto send;
-  }
-  regs->data = (unsigned int) ch;
-
-  /* Wait until the character has been sent? */
-  if (wait_sent) {
-    while ((regs->status & APBUART_STATUS_TE) == 0)
-      ;
-  }
+void apbuart_outbyte_polled(struct apbuart_regs *regs, char ch)
+{
+  apbuart_outbyte_wait(regs);
+  regs->data = (uint8_t) ch;
 }
 
 int apbuart_inbyte_nonblocking(struct apbuart_regs *regs)
 {
   /* Clear errors */
-  if (regs->status & APBUART_STATUS_ERR)
-    regs->status = ~APBUART_STATUS_ERR;
+  regs->status = ~APBUART_STATUS_ERR;
 
-  if ((regs->status & APBUART_STATUS_DR) == 0)
+  if ((regs->status & APBUART_STATUS_DR) == 0) {
     return -1;
-  else
-    return (int) regs->data;
+  }
+
+  return (uint8_t) regs->data;
 }

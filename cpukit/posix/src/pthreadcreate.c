@@ -74,7 +74,6 @@ int pthread_create(
   bool                                valid;
   Thread_Configuration                config;
   Status_Control                      status;
-  bool                                ok;
   Thread_Control                     *the_thread;
   Thread_Control                     *executing;
   int                                 schedpolicy = SCHED_RR;
@@ -222,7 +221,7 @@ int pthread_create(
     config.stack_free = _Stack_Free;
     config.stack_area = _Stack_Allocate( config.stack_size );
   } else {
-    config.stack_free = _Stack_Free_nothing;
+    config.stack_free = _Objects_Free_nothing;
   }
 
   if ( config.stack_area == NULL ) {
@@ -251,13 +250,13 @@ int pthread_create(
   the_thread->Life.state |= THREAD_LIFE_CHANGE_DEFERRED;
 
   _ISR_lock_ISR_disable( &lock_context );
-   ok = _Scheduler_Set_affinity(
+   status = _Scheduler_Set_affinity(
      the_thread,
      the_attr->affinitysetsize,
      the_attr->affinityset
    );
   _ISR_lock_ISR_enable( &lock_context );
-   if ( !ok ) {
+   if ( status != STATUS_SUCCESSFUL ) {
       _Thread_Free( &_POSIX_Threads_Information, the_thread );
      _RTEMS_Unlock_allocator();
      return EINVAL;
@@ -289,7 +288,7 @@ int pthread_create(
    *  POSIX threads are allocated and started in one operation.
    */
   _ISR_lock_ISR_disable( &lock_context );
-  ok = _Thread_Start( the_thread, &entry, &lock_context );
+  status = _Thread_Start( the_thread, &entry, &lock_context );
 
   #if defined(RTEMS_DEBUG)
     /*
@@ -298,7 +297,7 @@ int pthread_create(
      *  NOTE: This can only happen if someone slips in and touches the
      *        thread while we are creating it.
      */
-    if ( !ok ) {
+    if ( status != STATUS_SUCCESSFUL ) {
       _Thread_Free( &_POSIX_Threads_Information, the_thread );
       _Objects_Allocator_unlock();
       return EINVAL;

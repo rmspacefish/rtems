@@ -618,17 +618,6 @@ extern Context_Control_fp _CPU_Null_fp_context;
 /**
  * @addtogroup RTEMSScoreCPUExampleInterrupt
  * 
- * Support routine to initialize the RTEMS vector table after it is allocated.
- *
- * Port Specific Information:
- *
- * XXX document implementation including references if appropriate
- */
-#define _CPU_Initialize_vectors()
-
-/**
- * @addtogroup RTEMSScoreCPUExampleInterrupt
- * 
  * Disable all interrupts for an RTEMS critical section.  The previous
  * level is returned in @a _isr_cookie.
  *
@@ -1054,20 +1043,44 @@ void _CPU_ISR_install_vector(
 void *_CPU_Thread_Idle_body( uintptr_t ignored );
 
 /**
+ * @brief Performs a context switch from the executing thread to the heir
+ *   thread.
+ *
  * @addtogroup RTEMSScoreCPUExampleContext
  * 
- * This routine switches from the run context to the heir context.
+ * This routine switches from the executing context to the heir context.
  *
- * @param[in] run points to the context of the currently executing task
- * @param[in] heir points to the context of the heir task
+ * @param[out] executing points to the context of the currently executing task.
+ *
+ * @param[in, out] heir points to the context of the heir task.
  *
  * Port Specific Information:
  *
  * XXX document implementation including references if appropriate
  */
 void _CPU_Context_switch(
-  Context_Control  *run,
+  Context_Control  *executing,
   Context_Control  *heir
+);
+
+/**
+ * @brief Performs a context switch from the executing thread to the heir
+ *   thread and does not return.
+ *
+ * @addtogroup RTEMSScoreCPUExampleContext
+ *
+ * This routine shall be a strong alias to _CPU_Context_switch().  It shall be
+ * provided for all target architectures which support an SMP build
+ * configuration (RTEMS_SMP).  The purpose is help to compiler to avoid
+ * generation of dead code in _Thread_Start_multitasking().
+ *
+ * @param[out] executing points to the context of the currently executing task.
+ *
+ * @param[in, out] heir points to the context of the heir task.
+ */
+RTEMS_NO_RETURN void _CPU_Context_switch_no_return(
+  Context_Control *executing,
+  Context_Control *heir
 );
 
 /**

@@ -109,6 +109,7 @@ install:
 - destination: ${BSP_LIBDIR}
   source:
   - bsps/arm/imxrt/start/linkcmds.flexspi
+  - bsps/arm/imxrt/start/linkcmds.ocram
   - bsps/arm/imxrt/start/linkcmds.sdram
 links:
 - role: build-dependency
@@ -124,19 +125,29 @@ links:
 - role: build-dependency
   uid: optlinkcmds
 - role: build-dependency
+  uid: optmemdtcmsz
+- role: build-dependency
+  uid: optmemextramnocachesz
+- role: build-dependency
+  uid: optmemextramorigin
+- role: build-dependency
+  uid: optmemextramsz
+- role: build-dependency
   uid: optmemflashcfgsz
 - role: build-dependency
   uid: optmemflashivtsz
 - role: build-dependency
-  uid: optmemflexspisz
+  uid: optmemflashorigin
+- role: build-dependency
+  uid: optmemflashsz
+- role: build-dependency
+  uid: optmemitcmsz
 - role: build-dependency
   uid: optmemnullsz
 - role: build-dependency
-  uid: optmemsdrambase
+  uid: optmemocramnocachesz
 - role: build-dependency
-  uid: optmemsdramsz
-- role: build-dependency
-  uid: optmemsdramnocachesz
+  uid: optmemocramsz
 - role: build-dependency
   uid: ../start
 - role: build-dependency
@@ -229,9 +240,10 @@ source:
 - bsps/arm/imxrt/spi/imxrt-lpspi.c
 - bsps/arm/imxrt/start/bspstart.c
 - bsps/arm/imxrt/start/bspstarthooks.c
+- bsps/arm/imxrt/start/clock-arm-pll-config.c
 - bsps/arm/imxrt/start/flash-boot-data.c
-- bsps/arm/imxrt/start/flash-config.c
 - bsps/arm/imxrt/start/flash-dcd.c
+- bsps/arm/imxrt/start/flash-flexspi-config.c
 - bsps/arm/imxrt/start/flash-ivt.c
 - bsps/arm/imxrt/start/imxrt-ffec-init.c
 - bsps/arm/imxrt/start/mpu-config.c

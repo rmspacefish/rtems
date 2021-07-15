@@ -761,6 +761,8 @@ source:
 - cpukit/libcsupport/src/unmount.c
 - cpukit/libcsupport/src/utime.c
 - cpukit/libcsupport/src/utimes.c
+- cpukit/libcsupport/src/futimens.c
+- cpukit/libcsupport/src/utimensat.c
 - cpukit/libcsupport/src/utsname.c
 - cpukit/libcsupport/src/vprintk.c
 - cpukit/libcsupport/src/write.c
@@ -802,7 +804,7 @@ source:
 - cpukit/libfs/src/defaults/default_statvfs.c
 - cpukit/libfs/src/defaults/default_symlink.c
 - cpukit/libfs/src/defaults/default_unmount.c
-- cpukit/libfs/src/defaults/default_utime.c
+- cpukit/libfs/src/defaults/default_utimens.c
 - cpukit/libfs/src/defaults/default_write.c
 - cpukit/libfs/src/defaults/default_writev.c
 - cpukit/libfs/src/dosfs/fat.c
@@ -859,7 +861,7 @@ source:
 - cpukit/libfs/src/imfs/imfs_stat_file.c
 - cpukit/libfs/src/imfs/imfs_symlink.c
 - cpukit/libfs/src/imfs/imfs_unmount.c
-- cpukit/libfs/src/imfs/imfs_utime.c
+- cpukit/libfs/src/imfs/imfs_utimens.c
 - cpukit/libfs/src/imfs/ioman.c
 - cpukit/libfs/src/pipe/fifo.c
 - cpukit/libfs/src/pipe/pipe.c
@@ -990,6 +992,7 @@ source:
 - cpukit/posix/src/clockgetcpuclockid.c
 - cpukit/posix/src/clockgetres.c
 - cpukit/posix/src/clockgettime.c
+- cpukit/posix/src/clocknanosleep.c
 - cpukit/posix/src/clocksettime.c
 - cpukit/posix/src/condattrdestroy.c
 - cpukit/posix/src/condattrgetclock.c
@@ -1119,7 +1122,6 @@ source:
 - cpukit/posix/src/pthreadinitthreads.c
 - cpukit/posix/src/pthreadjoin.c
 - cpukit/posix/src/pthreadonce.c
-- cpukit/posix/src/pthreadself.c
 - cpukit/posix/src/pthreadsetaffinitynp.c
 - cpukit/posix/src/pthreadsetnamenp.c
 - cpukit/posix/src/pthreadsetschedparam.c
@@ -1299,7 +1301,6 @@ source:
 - cpukit/rtems/src/taskrestart.c
 - cpukit/rtems/src/taskresume.c
 - cpukit/rtems/src/tasks.c
-- cpukit/rtems/src/taskself.c
 - cpukit/rtems/src/tasksetaffinity.c
 - cpukit/rtems/src/tasksetpriority.c
 - cpukit/rtems/src/tasksetscheduler.c
@@ -1416,6 +1417,7 @@ source:
 - cpukit/score/src/iovprintf.c
 - cpukit/score/src/isr.c
 - cpukit/score/src/isrisinprogress.c
+- cpukit/score/src/isrvectortable.c
 - cpukit/score/src/iterateoverthreads.c
 - cpukit/score/src/kern_tc.c
 - cpukit/score/src/libatomic.c
@@ -1435,6 +1437,7 @@ source:
 - cpukit/score/src/objectclose.c
 - cpukit/score/src/objectextendinformation.c
 - cpukit/score/src/objectfree.c
+- cpukit/score/src/objectfreenothing.c
 - cpukit/score/src/objectfreestatic.c
 - cpukit/score/src/objectgetinfo.c
 - cpukit/score/src/objectgetinfoid.c
@@ -1452,6 +1455,7 @@ source:
 - cpukit/score/src/once.c
 - cpukit/score/src/percpu.c
 - cpukit/score/src/percpuasm.c
+- cpukit/score/src/percpudata.c
 - cpukit/score/src/pheapallocate.c
 - cpukit/score/src/pheapextend.c
 - cpukit/score/src/pheapfree.c
@@ -1520,7 +1524,6 @@ source:
 - cpukit/score/src/smpbarrierwait.c
 - cpukit/score/src/stackallocator.c
 - cpukit/score/src/stackallocatorfree.c
-- cpukit/score/src/stackallocatorfreenothing.c
 - cpukit/score/src/stackallocatorinit.c
 - cpukit/score/src/thread.c
 - cpukit/score/src/threadallocateunlimited.c
@@ -1544,10 +1547,12 @@ source:
 - cpukit/score/src/threadqextractwithproxy.c
 - cpukit/score/src/threadqfirst.c
 - cpukit/score/src/threadqflush.c
+- cpukit/score/src/threadqgetnameandid.c
 - cpukit/score/src/threadqops.c
 - cpukit/score/src/threadqtimeout.c
 - cpukit/score/src/threadrestart.c
 - cpukit/score/src/threadscheduler.c
+- cpukit/score/src/threadselfid.c
 - cpukit/score/src/threadsetstate.c
 - cpukit/score/src/threadstackallocate.c
 - cpukit/score/src/threadstackfree.c
@@ -1558,6 +1563,7 @@ source:
 - cpukit/score/src/threadyield.c
 - cpukit/score/src/timespecaddto.c
 - cpukit/score/src/timespecdivide.c
+- cpukit/score/src/timespecisnonnegative.c
 - cpukit/score/src/timespecdividebyinteger.c
 - cpukit/score/src/timespecfromticks.c
 - cpukit/score/src/timespecgetasnanoseconds.c

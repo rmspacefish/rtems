@@ -57,8 +57,7 @@
 
 #include <bsp/irq_supp.h>
 
-#define BSP_INTERRUPT_VECTOR_MIN BSP_LOWEST_OFFSET
-#define BSP_INTERRUPT_VECTOR_MAX BSP_MAX_OFFSET
+#define BSP_INTERRUPT_VECTOR_COUNT BSP_IRQ_NUMBER
 
 #ifdef __cplusplus
 extern "C" {

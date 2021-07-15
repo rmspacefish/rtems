@@ -22,18 +22,8 @@
 
 #include <rtems/score/isr.h>
 #include <rtems/score/address.h>
-#include <rtems/score/interr.h>
 #include <rtems/score/percpu.h>
-#include <rtems/score/stackimpl.h>
 #include <rtems/config.h>
-
-#if (CPU_SIMPLE_VECTORED_INTERRUPTS == TRUE)
-  ISR_Handler_entry _ISR_Vector_table[ CPU_INTERRUPT_NUMBER_OF_VECTORS ];
-#elif defined(CPU_INTERRUPT_NUMBER_OF_VECTORS)
-  #error "CPU_INTERRUPT_NUMBER_OF_VECTORS is defined for non-simple vectored interrupts"
-#elif defined(CPU_INTERRUPT_MAXIMUM_VECTOR_NUMBER)
-  #error "CPU_INTERRUPT_MAXIMUM_VECTOR_NUMBER is defined for non-simple vectored interrupts"
-#endif
 
 void _ISR_Handler_initialization( void )
 {
@@ -41,12 +31,6 @@ void _ISR_Handler_initialization( void )
   uint32_t  cpu_index;
   size_t    stack_size;
   char     *stack_low;
-
-  _ISR_Nest_level = 0;
-
-#if (CPU_SIMPLE_VECTORED_INTERRUPTS == TRUE)
-  _CPU_Initialize_vectors();
-#endif
 
   stack_size = rtems_configuration_get_interrupt_stack_size();
   cpu_max = rtems_configuration_get_maximum_processors();

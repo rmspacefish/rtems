@@ -25,27 +25,6 @@
 #include <rtems/score/percpu.h>
 #include <libcpu/grlib-tn-0018.h>
 
-#if defined(SPARC_USE_SYNCHRONOUS_FP_SWITCH)
-  #define FP_FRAME_OFFSET_FO_F1 (SPARC_MINIMUM_STACK_FRAME_SIZE + 0)
-  #define FP_FRAME_OFFSET_F2_F3 (FP_FRAME_OFFSET_FO_F1 + 8)
-  #define FP_FRAME_OFFSET_F4_F5 (FP_FRAME_OFFSET_F2_F3 + 8)
-  #define FP_FRAME_OFFSET_F6_F7 (FP_FRAME_OFFSET_F4_F5 + 8)
-  #define FP_FRAME_OFFSET_F8_F9 (FP_FRAME_OFFSET_F6_F7 + 8)
-  #define FP_FRAME_OFFSET_F1O_F11 (FP_FRAME_OFFSET_F8_F9 + 8)
-  #define FP_FRAME_OFFSET_F12_F13 (FP_FRAME_OFFSET_F1O_F11 + 8)
-  #define FP_FRAME_OFFSET_F14_F15 (FP_FRAME_OFFSET_F12_F13 + 8)
-  #define FP_FRAME_OFFSET_F16_F17 (FP_FRAME_OFFSET_F14_F15 + 8)
-  #define FP_FRAME_OFFSET_F18_F19 (FP_FRAME_OFFSET_F16_F17 + 8)
-  #define FP_FRAME_OFFSET_F2O_F21 (FP_FRAME_OFFSET_F18_F19 + 8)
-  #define FP_FRAME_OFFSET_F22_F23 (FP_FRAME_OFFSET_F2O_F21 + 8)
-  #define FP_FRAME_OFFSET_F24_F25 (FP_FRAME_OFFSET_F22_F23 + 8)
-  #define FP_FRAME_OFFSET_F26_F27 (FP_FRAME_OFFSET_F24_F25 + 8)
-  #define FP_FRAME_OFFSET_F28_F29 (FP_FRAME_OFFSET_F26_F27 + 8)
-  #define FP_FRAME_OFFSET_F3O_F31 (FP_FRAME_OFFSET_F28_F29 + 8)
-  #define FP_FRAME_OFFSET_FSR (FP_FRAME_OFFSET_F3O_F31 + 8)
-  #define FP_FRAME_SIZE (FP_FRAME_OFFSET_FSR + 8)
-#endif
-
 /*
  *  void _CPU_Context_switch(
  *    Context_Control  *run,
@@ -57,7 +36,9 @@
 
         .align 4
         PUBLIC(_CPU_Context_switch)
+        PUBLIC(_CPU_Context_switch_no_return)
 SYM(_CPU_Context_switch):
+SYM(_CPU_Context_switch_no_return):
         st      %g5, [%o0 + G5_OFFSET]       ! save the global registers
 
         /*
@@ -314,7 +295,7 @@ SYM(_CPU_Context_restore):
         mov     %i0, %o1                      ! in the delay slot
 
 /*
- *  void _ISR_Handler()
+ *  void _SPARC_Interrupt_trap()
  *
  *  This routine provides the RTEMS interrupt management.
  *
@@ -324,28 +305,14 @@ SYM(_CPU_Context_restore):
  *    l0 = PSR
  *    l1 = PC
  *    l2 = nPC
- *    l3 = trap type
+ *    l3 = interrupt vector number (this is not the trap type)
  *
- *  NOTE: By an executive defined convention, trap type is between 0 and 255 if
- *        it is an asynchonous trap and 256 and 511 if it is synchronous.
+ *  NOTE: This trap handler is intended to service external interrupts.
  */
 
         .align 4
-        PUBLIC(_ISR_Handler)
-SYM(_ISR_Handler):
-        /*
-         *  Fix the return address for synchronous traps.
-         */
-
-        andcc   %l3, SPARC_SYNCHRONOUS_TRAP_BIT_MASK, %g0
-                                      ! Is this a synchronous trap?
-        be,a    win_ovflow            ! No, then skip the adjustment
-        nop                           ! DELAY
-        mov     %l1, %l6              ! save trapped pc for debug info
-        mov     %l2, %l1              ! do not return to the instruction
-        add     %l2, 4, %l2           ! indicated
-
-win_ovflow:
+        PUBLIC(_SPARC_Interrupt_trap)
+SYM(_SPARC_Interrupt_trap):
         /*
          *  Save the globals this block uses.
          *
@@ -432,7 +399,7 @@ dont_do_the_window:
          *  includes a regular minimum stack frame which will be used if
          *  needed by register window overflow and underflow handlers.
          *
-         *  REGISTERS SAME AS AT _ISR_Handler
+         *  REGISTERS SAME AS AT _SPARC_Interrupt_trap()
          */
 
         sub     %fp, CPU_INTERRUPT_FRAME_SIZE, %sp
@@ -458,9 +425,6 @@ dont_do_the_window:
 
         rd      %y, %g1
         st      %g1, [%sp + ISF_Y_OFFSET]      ! save y
-        st      %l6, [%sp + ISF_TPC_OFFSET]    ! save real trapped pc
-
-        mov     %sp, %o1                       ! 2nd arg to ISR Handler
 
         /*
          *  Increment ISR nest level and Thread dispatch disable level.
@@ -539,26 +503,16 @@ dont_switch_stacks:
         sub      %sp, SPARC_MINIMUM_STACK_FRAME_SIZE, %sp
 
         /*
-         *  Check if we have an external interrupt (trap 0x11 - 0x1f). If so,
-         *  set the PIL in the %psr to mask off interrupts with lower priority.
+         *  Set the PIL in the %psr to mask off interrupts with lower priority.
          *  The original %psr in %l0 is not modified since it will be restored
          *  when the interrupt handler returns.
          */
 
         mov      %l0, %g5
-        and      %l3, 0x0ff, %g4
-        subcc    %g4, 0x11, %g0
-        bl       dont_fix_pil
-        subcc    %g4, 0x1f, %g0
-        bg       dont_fix_pil
-        sll      %g4, 8, %g4
+        sll      %l3, 8, %g4
         and      %g4, SPARC_PSR_PIL_MASK, %g4
         andn     %l0, SPARC_PSR_PIL_MASK, %g5
-        ba       pil_fixed
         or       %g4, %g5, %g5
-dont_fix_pil:
-        or       %g5, SPARC_PSR_PIL_MASK, %g5
-pil_fixed:
 
 #if SPARC_HAS_FPU == 1
         /*
@@ -571,23 +525,10 @@ pil_fixed:
         wr       %g5, SPARC_PSR_ET_MASK, %psr ! **** ENABLE TRAPS ****
 
         /*
-         *  Vector to user's handler.
-         *
-         *  NOTE: TBR may no longer have vector number in it since
-         *        we just enabled traps.  It is definitely in l3.
+         *  Call _SPARC_Interrupt_dispatch( %l3 )
          */
-
-        sethi    %hi(SYM(_ISR_Vector_table)), %g4
-        or       %g4, %lo(SYM(_ISR_Vector_table)), %g4
-        and      %l3, 0xFF, %g5         ! remove synchronous trap indicator
-        sll      %g5, 2, %g5            ! g5 = offset into table
-        ld       [%g4 + %g5], %g4       ! g4 = _ISR_Vector_table[ vector ]
-
-
-                                        ! o1 = 2nd arg = address of the ISF
-                                        !   WAS LOADED WHEN ISF WAS SAVED!!!
         mov      %l3, %o0               ! o0 = 1st arg = vector number
-        call     %g4
+        call     SYM(_SPARC_Interrupt_dispatch)
 #if defined(RTEMS_PROFILING)
          mov     %o5, %l3               ! save interrupt entry instant
 #else
@@ -705,40 +646,40 @@ isr_dispatch:
          * Post-switch actions (e.g. signal handlers) and context switch
          * extensions may safely use the floating point unit.
          */
-        sub     %sp, FP_FRAME_SIZE, %sp
-        std     %f0, [%sp + FP_FRAME_OFFSET_FO_F1]
+        sub     %sp, SPARC_FP_FRAME_SIZE, %sp
+        std     %f0, [%sp + SPARC_FP_FRAME_OFFSET_FO_F1]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f2, [%sp + FP_FRAME_OFFSET_F2_F3]
+        std     %f2, [%sp + SPARC_FP_FRAME_OFFSET_F2_F3]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f4, [%sp + FP_FRAME_OFFSET_F4_F5]
+        std     %f4, [%sp + SPARC_FP_FRAME_OFFSET_F4_F5]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f6, [%sp + FP_FRAME_OFFSET_F6_F7]
+        std     %f6, [%sp + SPARC_FP_FRAME_OFFSET_F6_F7]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f8, [%sp + FP_FRAME_OFFSET_F8_F9]
+        std     %f8, [%sp + SPARC_FP_FRAME_OFFSET_F8_F9]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f10, [%sp + FP_FRAME_OFFSET_F1O_F11]
+        std     %f10, [%sp + SPARC_FP_FRAME_OFFSET_F1O_F11]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f12, [%sp + FP_FRAME_OFFSET_F12_F13]
+        std     %f12, [%sp + SPARC_FP_FRAME_OFFSET_F12_F13]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f14, [%sp + FP_FRAME_OFFSET_F14_F15]
+        std     %f14, [%sp + SPARC_FP_FRAME_OFFSET_F14_F15]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f16, [%sp + FP_FRAME_OFFSET_F16_F17]
+        std     %f16, [%sp + SPARC_FP_FRAME_OFFSET_F16_F17]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f18, [%sp + FP_FRAME_OFFSET_F18_F19]
+        std     %f18, [%sp + SPARC_FP_FRAME_OFFSET_F18_F19]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f20, [%sp + FP_FRAME_OFFSET_F2O_F21]
+        std     %f20, [%sp + SPARC_FP_FRAME_OFFSET_F2O_F21]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f22, [%sp + FP_FRAME_OFFSET_F22_F23]
+        std     %f22, [%sp + SPARC_FP_FRAME_OFFSET_F22_F23]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f24, [%sp + FP_FRAME_OFFSET_F24_F25]
+        std     %f24, [%sp + SPARC_FP_FRAME_OFFSET_F24_F25]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f26, [%sp + FP_FRAME_OFFSET_F26_F27]
+        std     %f26, [%sp + SPARC_FP_FRAME_OFFSET_F26_F27]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f28, [%sp + FP_FRAME_OFFSET_F28_F29]
+        std     %f28, [%sp + SPARC_FP_FRAME_OFFSET_F28_F29]
         SPARC_LEON3FT_B2BST_NOP
-        std     %f30, [%sp + FP_FRAME_OFFSET_F3O_F31]
+        std     %f30, [%sp + SPARC_FP_FRAME_OFFSET_F3O_F31]
         SPARC_LEON3FT_B2BST_NOP
-        st      %fsr, [%sp + FP_FRAME_OFFSET_FSR]
+        st      %fsr, [%sp + SPARC_FP_FRAME_OFFSET_FSR]
         call    SYM(_Thread_Do_dispatch)
          mov    %g6, %o0
 
@@ -746,25 +687,25 @@ isr_dispatch:
          * Restore the floating point context from stack frame and release the
          * stack frame.
          */
-        ldd     [%sp + FP_FRAME_OFFSET_FO_F1], %f0
-        ldd     [%sp + FP_FRAME_OFFSET_F2_F3], %f2
-        ldd     [%sp + FP_FRAME_OFFSET_F4_F5], %f4
-        ldd     [%sp + FP_FRAME_OFFSET_F6_F7], %f6
-        ldd     [%sp + FP_FRAME_OFFSET_F8_F9], %f8
-        ldd     [%sp + FP_FRAME_OFFSET_F1O_F11], %f10
-        ldd     [%sp + FP_FRAME_OFFSET_F12_F13], %f12
-        ldd     [%sp + FP_FRAME_OFFSET_F14_F15], %f14
-        ldd     [%sp + FP_FRAME_OFFSET_F16_F17], %f16
-        ldd     [%sp + FP_FRAME_OFFSET_F18_F19], %f18
-        ldd     [%sp + FP_FRAME_OFFSET_F2O_F21], %f20
-        ldd     [%sp + FP_FRAME_OFFSET_F22_F23], %f22
-        ldd     [%sp + FP_FRAME_OFFSET_F24_F25], %f24
-        ldd     [%sp + FP_FRAME_OFFSET_F26_F27], %f26
-        ldd     [%sp + FP_FRAME_OFFSET_F28_F29], %f28
-        ldd     [%sp + FP_FRAME_OFFSET_F3O_F31], %f30
-        ld      [%sp + FP_FRAME_OFFSET_FSR], %fsr
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_FO_F1], %f0
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F2_F3], %f2
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F4_F5], %f4
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F6_F7], %f6
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F8_F9], %f8
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F1O_F11], %f10
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F12_F13], %f12
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F14_F15], %f14
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F16_F17], %f16
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F18_F19], %f18
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F2O_F21], %f20
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F22_F23], %f22
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F24_F25], %f24
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F26_F27], %f26
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F28_F29], %f28
+        ldd     [%sp + SPARC_FP_FRAME_OFFSET_F3O_F31], %f30
+        ld      [%sp + SPARC_FP_FRAME_OFFSET_FSR], %fsr
         ba      .Lthread_dispatch_done
-         add    %sp, FP_FRAME_SIZE, %sp
+         add    %sp, SPARC_FP_FRAME_SIZE, %sp
 
 .Lnon_fp_thread_dispatch:
 #endif
@@ -799,8 +740,8 @@ isr_dispatch:
          *  The CWP in place at this point may be different from
          *  that which was in effect at the beginning of the ISR if we
          *  have been context switched between the beginning of this invocation
-         *  of _ISR_Handler and this point.  Thus the CWP and WIM should
-         *  not be changed back to their values at ISR entry time.  Any
+         *  of _SPARC_Interrupt_trap() and this point.  Thus the CWP and WIM
+         *  should not be changed back to their values at ISR entry time.  Any
          *  changes to the PSR must preserve the CWP.
          */
 

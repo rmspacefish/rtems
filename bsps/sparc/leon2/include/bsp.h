@@ -52,6 +52,8 @@ extern "C" {
 /* SPARC CPU variant: LEON2 */
 #define LEON2 1
 
+#define BSP_FEATURE_IRQ_EXTENSION
+
 /*
  *  BSP provides its own Idle thread body
  */
@@ -114,16 +116,8 @@ rtems_isr_entry set_vector(                     /* returns old vector */
 
 void BSP_fatal_exit(uint32_t error);
 
-void bsp_spurious_initialize( void );
-
 /* Interrupt Service Routine (ISR) pointer */
 typedef void (*bsp_shared_isr)(void *arg);
-
-/* Initializes the Shared System Interrupt service */
-extern void BSP_shared_interrupt_init(void);
-
-/* Called directly from IRQ trap handler TRAP[0x10..0x1F] = IRQ[0..15] */
-void bsp_isr_handler(rtems_vector_number vector);
 
 /* Registers a shared IRQ handler, and enable it at IRQ controller. Multiple
  * interrupt handlers may use the same IRQ number, all ISRs will be called

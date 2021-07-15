@@ -24,23 +24,10 @@
 #define BSP_INTERRUPT_VECTOR_MAX_STD 15 /* Standard IRQ controller */
 #define BSP_INTERRUPT_VECTOR_MAX_EXT 31 /* Extended IRQ controller */
 
-#define BSP_INTERRUPT_VECTOR_MIN 0
-#define BSP_INTERRUPT_VECTOR_MAX BSP_INTERRUPT_VECTOR_MAX_EXT
+#define BSP_INTERRUPT_VECTOR_COUNT (BSP_INTERRUPT_VECTOR_MAX_EXT + 1)
 
 /* The check is different depending on IRQ controller, runtime detected */
 #define BSP_INTERRUPT_CUSTOM_VALID_VECTOR
-
-/**
- * @brief Returns true if the interrupt vector with number @a vector is valid.
- */
-static inline bool bsp_interrupt_is_valid_vector(rtems_vector_number vector)
-{
-  if (LEON3_IrqCtrl_EIrq != 0) {
-    return vector <= BSP_INTERRUPT_VECTOR_MAX_EXT;
-  } else {
-    return vector <= BSP_INTERRUPT_VECTOR_MAX_STD;
-  }
-}
 
 void bsp_interrupt_set_affinity(
   rtems_vector_number vector,

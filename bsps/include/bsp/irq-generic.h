@@ -1,27 +1,43 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+
 /**
  * @file
  *
  * @ingroup bsp_interrupt
  *
- * @brief Generic BSP interrupt support API.
+ * @brief This header file provides interfaces of the generic interrupt
+ *   controller support.
  */
 
 /*
- * Based on concepts of Pavel Pisa, Till Straumann and Eric Valette.
+ * Copyright (C) 2016 Chris Johns <chrisj@rtems.org>
  *
- * Copyright (c) 2008, 2017 embedded brains GmbH.
+ * Copyright (C) 2008, 2017 embedded brains GmbH (http://www.embedded-brains.de)
  *
- *  embedded brains GmbH
- *  Dornierstr. 4
- *  82178 Puchheim
- *  Germany
- *  <rtems@embedded-brains.de>
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- * Copyright (c) 2016 Chris Johns <chrisj@rtems.org>
- *
- * The license and distribution terms for this file may be
- * found in the file LICENSE in this distribution or at
- * http://www.rtems.org/license/LICENSE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * The API is based on concepts of Pavel Pisa, Till Straumann and Eric Valette.
  */
 
 #ifndef LIBBSP_SHARED_IRQ_GENERIC_H
@@ -42,23 +58,16 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if !defined(BSP_INTERRUPT_VECTOR_MIN) || !defined(BSP_INTERRUPT_VECTOR_MAX) || (BSP_INTERRUPT_VECTOR_MAX + 1) < BSP_INTERRUPT_VECTOR_MIN
-  #error "invalid BSP_INTERRUPT_VECTOR_MIN or BSP_INTERRUPT_VECTOR_MAX"
+#if !defined(BSP_INTERRUPT_VECTOR_COUNT)
+  #error "BSP_INTERRUPT_VECTOR_COUNT shall be defined"
 #endif
 
 #if defined(BSP_INTERRUPT_USE_INDEX_TABLE) && !defined(BSP_INTERRUPT_HANDLER_TABLE_SIZE)
   #error "if you define BSP_INTERRUPT_USE_INDEX_TABLE, you have to define BSP_INTERRUPT_HANDLER_TABLE_SIZE etc. as well"
 #endif
 
-#if defined(BSP_INTERRUPT_NO_HEAP_USAGE) && !defined(BSP_INTERRUPT_USE_INDEX_TABLE)
-  #error "if you define BSP_INTERRUPT_NO_HEAP_USAGE, you have to define BSP_INTERRUPT_USE_INDEX_TABLE etc. as well"
-#endif
-
-#define BSP_INTERRUPT_VECTOR_NUMBER \
-  (BSP_INTERRUPT_VECTOR_MAX - BSP_INTERRUPT_VECTOR_MIN + 1)
-
 #ifndef BSP_INTERRUPT_HANDLER_TABLE_SIZE
-  #define BSP_INTERRUPT_HANDLER_TABLE_SIZE BSP_INTERRUPT_VECTOR_NUMBER
+  #define BSP_INTERRUPT_HANDLER_TABLE_SIZE BSP_INTERRUPT_VECTOR_COUNT
 #endif
 
 /* Internal macros for SMP support, do not use externally */
@@ -101,9 +110,9 @@ static inline rtems_vector_number bsp_interrupt_handler_index(
 )
 {
   #ifdef BSP_INTERRUPT_USE_INDEX_TABLE
-    return bsp_interrupt_handler_index_table [vector - BSP_INTERRUPT_VECTOR_MIN];
+    return bsp_interrupt_handler_index_table [vector];
   #else
-    return vector - BSP_INTERRUPT_VECTOR_MIN;
+    return vector;
   #endif
 }
 
@@ -115,8 +124,8 @@ static inline rtems_vector_number bsp_interrupt_handler_index(
  * @brief Generic BSP Interrupt Support
  *
  * The BSP interrupt support manages a sequence of interrupt vector numbers
- * ranging from @ref BSP_INTERRUPT_VECTOR_MIN to @ref BSP_INTERRUPT_VECTOR_MAX
- * including the end points.  It provides methods to
+ * greater than or equal to zero and less than @ref BSP_INTERRUPT_VECTOR_COUNT
+ * It provides methods to
  * @ref bsp_interrupt_handler_install() "install",
  * @ref bsp_interrupt_handler_remove() "remove" and
  * @ref bsp_interrupt_handler_dispatch() "dispatch" interrupt handlers for each
@@ -127,16 +136,12 @@ static inline rtems_vector_number bsp_interrupt_handler_index(
  *
  * You have to configure the BSP interrupt support in the <bsp/irq.h> file
  * for each BSP.  For a minimum configuration you have to provide
- * @ref BSP_INTERRUPT_VECTOR_MIN and @ref BSP_INTERRUPT_VECTOR_MAX.
+ * @ref BSP_INTERRUPT_VECTOR_COUNT.
  *
  * For boards with small memory requirements you can define
  * @ref BSP_INTERRUPT_USE_INDEX_TABLE.  With an enabled index table the handler
  * table will be accessed via a small index table.  You can define the size of
  * the handler table with @ref BSP_INTERRUPT_HANDLER_TABLE_SIZE.
- *
- * Normally new list entries are allocated from the heap.  You may define
- * @ref BSP_INTERRUPT_NO_HEAP_USAGE, if you do not want to use the heap.  For
- * this option you have to define @ref BSP_INTERRUPT_USE_INDEX_TABLE as well.
  *
  * You have to provide some special routines in your BSP (follow the links for
  * the details):
@@ -166,8 +171,7 @@ static inline rtems_vector_number bsp_interrupt_handler_index(
    */
   static inline bool bsp_interrupt_is_valid_vector(rtems_vector_number vector)
   {
-    return (rtems_vector_number) BSP_INTERRUPT_VECTOR_MIN <= vector
-      && vector <= (rtems_vector_number) BSP_INTERRUPT_VECTOR_MAX;
+    return vector < (rtems_vector_number) BSP_INTERRUPT_VECTOR_COUNT;
   }
 #endif
 
@@ -247,34 +251,55 @@ void bsp_interrupt_vector_enable(rtems_vector_number vector);
 void bsp_interrupt_vector_disable(rtems_vector_number vector);
 
 /**
- * @brief Sequencially calls all interrupt handlers for the vector number @a
- * vector.
+ * @brief Sequentially calls all interrupt handlers installed at the vector.
  *
- * If the vector number is out of range or the handler list is empty
- * bsp_interrupt_handler_default() will be called with argument @a vector.
+ * This function does not validate the vector number.  If the vector number is
+ * out of range, then the behaviour is undefined.
  *
  * You can call this function within every context which can be disabled via
- * rtems_interrupt_disable().
+ * rtems_interrupt_local_disable().
+ *
+ * @param vector is the vector number.
  */
-static inline void bsp_interrupt_handler_dispatch(rtems_vector_number vector)
+static inline void bsp_interrupt_handler_dispatch_unchecked(
+  rtems_vector_number vector
+)
 {
-  if (bsp_interrupt_is_valid_vector(vector)) {
-    const bsp_interrupt_handler_entry *e =
-      &bsp_interrupt_handler_table [bsp_interrupt_handler_index(vector)];
+  const bsp_interrupt_handler_entry *e;
 
-    do {
-      rtems_interrupt_handler handler;
-      void *arg;
+  e = &bsp_interrupt_handler_table[ bsp_interrupt_handler_index( vector ) ];
 
-      arg = e->arg;
-      bsp_interrupt_fence(ATOMIC_ORDER_ACQUIRE);
-      handler = e->handler;
-      (*handler)(arg);
+  do {
+    rtems_interrupt_handler handler;
+    void *arg;
 
-      e = e->next;
-    } while (e != NULL);
+    arg = e->arg;
+    bsp_interrupt_fence( ATOMIC_ORDER_ACQUIRE );
+    handler = e->handler;
+    ( *handler )( arg );
+
+    e = e->next;
+  } while ( e != NULL );
+}
+
+/**
+ * @brief Sequentially calls all interrupt handlers installed at the vector.
+ *
+ * If the vector number is out of range or the handler list is empty
+ * bsp_interrupt_handler_default() will be called with the vector number as
+ * argument.
+ *
+ * You can call this function within every context which can be disabled via
+ * rtems_interrupt_local_disable().
+ *
+ * @param vector is the vector number.
+ */
+static inline void bsp_interrupt_handler_dispatch( rtems_vector_number vector )
+{
+  if ( bsp_interrupt_is_valid_vector( vector ) ) {
+    bsp_interrupt_handler_dispatch_unchecked( vector );
   } else {
-    bsp_interrupt_handler_default(vector);
+    bsp_interrupt_handler_default( vector );
   }
 }
 

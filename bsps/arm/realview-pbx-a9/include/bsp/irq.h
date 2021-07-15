@@ -90,8 +90,7 @@ extern "C" {
 #define RVPBXA9_IRQ_P_NINT_6 88
 #define RVPBXA9_IRQ_P_NINT_7 89
 
-#define BSP_INTERRUPT_VECTOR_MIN 0
-#define BSP_INTERRUPT_VECTOR_MAX 89
+#define BSP_INTERRUPT_VECTOR_COUNT 90
 
 #ifdef __cplusplus
 }

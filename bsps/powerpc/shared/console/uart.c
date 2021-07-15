@@ -160,7 +160,7 @@ BSP_uart_init(int uart, int baud, int hwFlow)
 
   if ( (int)BSPBaseBaud <= 0 ) {
   	/* Use current divisor assuming BSPBaseBaud gives us the current speed */
-	BSPBaseBaud  = BSPBaseBaud ? -BSPBaseBaud : 9600;
+	BSPBaseBaud  = BSPBaseBaud ? -BSPBaseBaud : BSP_CONSOLE_BAUD;
 	BSPBaseBaud *= ((uread(uart, DLM) << 8) | uread(uart, DLL));
   }
 
@@ -535,6 +535,10 @@ BSP_uart_termios_set(int uart, void *p)
   termios_tx_hold_valid_com[uart]  = 0;
 
   uart_data[uart].ioMode           = ttyp->device.outputUsesInterrupts;
+
+  /* Convert from the baud number to the "speed_t" termios setting. */
+  ttyp->termios.c_ispeed = ttyp->termios.c_ospeed =
+    rtems_termios_number_to_baud(uart_data[uart].baud);
 
   return;
 }

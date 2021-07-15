@@ -32,7 +32,6 @@ librtemsbsp_a_SOURCES += ../../../../../../bsps/shared/start/gettargethash-defau
 librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/shared/start/bspgetworkarea.c
 librtemsbsp_a_SOURCES += ../../../../../../bsps/shared/start/sbrk.c
 librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon3/start/setvec.c
-librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon3/start/spurious.c
 librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon3/start/bspidle.S
 librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon3/start/bspdelay.c
 librtemsbsp_a_SOURCES += ../../../../../../bsps/shared/start/bspreset-empty.c
@@ -76,14 +75,6 @@ librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon3/btimer/watchdog.c
 
 if HAS_SMP
 librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon3/start/bspsmp.c
-endif
-
-if HAS_NETWORKING
-librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon3/net/leon_smc91111.c
-librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon3/net/leon_open_eth.c
-if !HAS_SMP
-librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon3/net/leon_greth.c
-endif
 endif
 
 if HAS_MP

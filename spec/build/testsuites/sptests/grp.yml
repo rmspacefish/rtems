@@ -13,6 +13,8 @@ ldflags:
 - -Wl,--wrap=puts
 links:
 - role: build-dependency
+  uid: libsplinkersets01
+- role: build-dependency
   uid: sp01
 - role: build-dependency
   uid: sp02
@@ -186,8 +188,6 @@ links:
   uid: spconsole01
 - role: build-dependency
   uid: spcontext01
-- role: build-dependency
-  uid: spcoverage
 - role: build-dependency
   uid: spcpucounter01
 - role: build-dependency

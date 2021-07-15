@@ -27,23 +27,22 @@
 #include <rtems/score/watchdogimpl.h>
 
 rtems_status_code rtems_task_wake_when(
-  rtems_time_of_day *time_buffer
+  const rtems_time_of_day *time_buffer
 )
 {
-  uint32_t         seconds;
-  Thread_Control  *executing;
-  Per_CPU_Control *cpu_self;
+  uint32_t          seconds;
+  Thread_Control   *executing;
+  Per_CPU_Control  *cpu_self;
+  rtems_status_code status;
 
   if ( !_TOD_Is_set() )
     return RTEMS_NOT_DEFINED;
 
-  if ( !time_buffer )
-    return RTEMS_INVALID_ADDRESS;
+  status = _TOD_Validate( time_buffer, TOD_DISABLE_TICKS_VALIDATION );
 
-  time_buffer->ticks = 0;
-
-  if ( !_TOD_Validate( time_buffer ) )
-    return RTEMS_INVALID_CLOCK;
+  if ( status != RTEMS_SUCCESSFUL ) {
+    return status;
+  }
 
   seconds = _TOD_To_seconds( time_buffer );
 

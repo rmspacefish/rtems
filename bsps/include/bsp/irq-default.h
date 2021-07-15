@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+
 /**
  * @file
  *
@@ -5,9 +7,7 @@
  */
 
 /*
- * SPDX-License-Identifier: BSD-2-Clause
- *
- * Copyright (C) 2019 embedded brains GmbH
+ * Copyright (C) 2019 embedded brains GmbH (http://www.embedded-brains.de)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,14 +45,12 @@ extern "C" {
  */
 
 /**
- * @brief Default minimum interrupt vector.
+ * @brief This constant defines the default interrupt vector count.
+ *
+ * By default, no interrupt vectors are supported and all related directives
+ * return RTEMS_INVALID_ID.
  */
-#define BSP_INTERRUPT_VECTOR_MIN 0
-
-/**
- * @brief Default maximum interrupt vector.
- */
-#define BSP_INTERRUPT_VECTOR_MAX 0
+#define BSP_INTERRUPT_VECTOR_COUNT 0
 
 /** @} */
 

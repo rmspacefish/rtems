@@ -6,11 +6,19 @@ build-type: option
 copyrights:
 - Copyright (C) 2020 embedded brains GmbH (http://www.embedded-brains.de)
 default: 115200
+default-by-family:
+- value: 9600
+  families:
+  - powerpc/motorola_powerpc
 default-by-variant:
 - value: 9600
   variants:
   - m68k/m5484FireEngine
   - powerpc/hsc_cm01
+  - powerpc/beatnik
+  - powerpc/haleakala
+  - powerpc/mvme3100
+  - powerpc/mvme5500
 - value: 19200
   variants:
   - m68k/COBRA5475

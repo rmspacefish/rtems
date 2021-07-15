@@ -144,7 +144,7 @@ typedef struct {
   /**
    * @brief This member contains the handler to free the stack.
    *
-   * It shall not be NULL.  Use _Stack_Free_nothing() if nothing is to free.
+   * It shall not be NULL.  Use _Objects_Free_nothing() if nothing is to free.
    */
   void ( *stack_free )( void * );
 
@@ -260,26 +260,12 @@ void _Thread_Free(
  * @param[in, out] is the ISR lock context which shall be used to disable the
  *   local interrupts before the call of this routine.
  *
- * @retval true The thread was in the dormant state and was sucessefully
- *   started.
+ * @retval STATUS_SUCCESSFUL The thread start was successful.
  *
- * @retval false Otherwise.
+ * @retval STATUS_INCORRECT_STATE The thread was already started.
  */
-bool _Thread_Start(
+Status_Control _Thread_Start(
   Thread_Control                 *the_thread,
-  const Thread_Entry_information *entry,
-  ISR_lock_Context               *lock_context
-);
-
-/**
- * @brief Restarts the currently executing thread.
- *
- * @param[in, out] executing The currently executing thread.
- * @param entry The start entry information for @a executing.
- * @param lock_context The lock context.
- */
-RTEMS_NO_RETURN void _Thread_Restart_self(
-  Thread_Control                 *executing,
   const Thread_Entry_information *entry,
   ISR_lock_Context               *lock_context
 );
@@ -287,14 +273,17 @@ RTEMS_NO_RETURN void _Thread_Restart_self(
 /**
  * @brief Restarts the thread.
  *
- * @param[in, out] the_thread The thread to restart.
- * @param entry The start entry information for @a the_thread.
- * @param lock_context The lock context.
+ * @param[in, out] the_thread is the thread to restart.
  *
- * @retval true The operation was successful.
- * @retval false The operation failed.
+ * @param entry is the new start entry information for the thread to restart.
+ *
+ * @param[in, out] lock_context is the lock context with interrupts disabled.
+ *
+ * @retval STATUS_SUCCESSFUL The operation was successful.
+ *
+ * @retval STATUS_INCORRECT_STATE The thread was dormant.
  */
-bool _Thread_Restart_other(
+Status_Control _Thread_Restart(
   Thread_Control                 *the_thread,
   const Thread_Entry_information *entry,
   ISR_lock_Context               *lock_context
@@ -308,18 +297,20 @@ bool _Thread_Restart_other(
 void _Thread_Yield( Thread_Control *executing );
 
 /**
- * @brief Changes the currently executing thread to a new state with the sets.
+ * @brief Changes the life of currently executing thread.
  *
- * @param clear States to clear.
- * @param set States to set.
- * @param ignore States to ignore.
+ * @param life_states_to_clear are the thread life states to clear.
  *
- * @return The previous state the thread was in.
+ * @param life_states_to_set are the thread life states to set.
+ *
+ * @param ignored_life_states are the ignored thread life states.
+ *
+ * @return Returns the thread life state before the changes.
  */
 Thread_Life_state _Thread_Change_life(
-  Thread_Life_state clear,
-  Thread_Life_state set,
-  Thread_Life_state ignore
+  Thread_Life_state life_states_to_clear,
+  Thread_Life_state life_states_to_set,
+  Thread_Life_state ignored_life_states
 );
 
 /**
@@ -348,14 +339,13 @@ void _Thread_Kill_zombies( void );
 /**
  * @brief Exits the currently executing thread.
  *
- * @param[in, out] executing The currently executing thread.
- * @param set The states to set.
- * @param[out] exit_value Contains the exit value of the thread.
+ * @param exit_value is the exit value of the thread.
+ *
+ * @param life_states_to_set are the thread life states to set.
  */
-void _Thread_Exit(
-  Thread_Control    *executing,
-  Thread_Life_state  set,
-  void              *exit_value
+RTEMS_NO_RETURN void _Thread_Exit(
+  void              *exit_value,
+  Thread_Life_state  life_states_to_set
 );
 
 /**
@@ -903,6 +893,13 @@ Thread_Control *_Thread_Get(
   Objects_Id         id,
   ISR_lock_Context  *lock_context
 );
+
+/**
+ * @brief Gets the identifier of the calling thread.
+ *
+ * @return Returns the identifier of the calling thread.
+ */
+Objects_Id _Thread_Self_id( void );
 
 /**
  * @brief Gets the cpu of the thread's scheduler.

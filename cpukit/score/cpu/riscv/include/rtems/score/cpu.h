@@ -147,8 +147,6 @@ typedef struct {
 
 #define CPU_PROVIDES_ISR_IS_IN_PROGRESS FALSE
 
-#define _CPU_Initialize_vectors()
-
 static inline uint32_t riscv_interrupt_disable( void )
 {
   unsigned long mstatus;
@@ -381,6 +379,11 @@ void *_CPU_Thread_Idle_body( uintptr_t ignored );
 void _CPU_Context_switch(
   Context_Control  *run,
   Context_Control  *heir
+);
+
+RTEMS_NO_RETURN void _CPU_Context_switch_no_return(
+  Context_Control *executing,
+  Context_Control *heir
 );
 
 /*

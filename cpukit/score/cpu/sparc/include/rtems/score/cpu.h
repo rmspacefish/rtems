@@ -743,14 +743,13 @@ extern const CPU_Trap_table_entry _CPU_Trap_slot_template;
 
 #ifndef ASM
 
-/*
- *  ISR handler macros
- */
-
 /**
- * Support routine to initialize the RTEMS vector table after it is allocated.
+ * @brief Dispatches the installed interrupt handlers.
+ *
+ * @param irq is the interrupt vector number of the external interrupt ranging
+ *   from 0 to 15.  This is not a trap number.
  */
-#define _CPU_Initialize_vectors()
+void _SPARC_Interrupt_dispatch( uint32_t irq );
 
 /**
  * Disable all interrupts for a critical section.  The previous
@@ -971,6 +970,11 @@ void _CPU_Context_switch(
   Context_Control  *heir
 );
 
+RTEMS_NO_RETURN void _CPU_Context_switch_no_return(
+  Context_Control *executing,
+  Context_Control *heir
+);
+
 /**
  * @brief SPARC specific context restore.
  *
@@ -1023,9 +1027,60 @@ RTEMS_NO_RETURN void _CPU_Context_restore( Context_Control *new_context );
   } while ( 0 )
 #endif
 
+/**
+ * @brief This structure contains the local and input registers of a register
+ *   window.
+ */
 typedef struct {
+  /** @brief This member contains the local 0..7 register values. */
+  uint32_t local[ 8 ];
+
+  /** @brief This member contains the input 0..7 register values. */
+  uint32_t input[ 8 ];
+} SPARC_Register_window;
+
+/**
+ * @brief This structure contains the register set of a context which caused an
+ *   unexpected trap.
+ */
+typedef struct {
+  /** @brief This member contains the PSR register value. */
+  uint32_t psr;
+
+  /** @brief This member contains the PC value. */
+  uint32_t pc;
+
+  /** @brief This member contains the nPC value. */
+  uint32_t npc;
+
+  /** @brief This member contains the trap number. */
   uint32_t trap;
-  CPU_Interrupt_frame *isf;
+
+  /** @brief This member contains the WIM register value. */
+  uint32_t wim;
+
+  /** @brief This member contains the Y register value. */
+  uint32_t y;
+
+  /** @brief This member contains the global 0..7 register values. */
+  uint32_t global[ 8 ];
+
+  /** @brief This member contains the output 0..7 register values. */
+  uint32_t output[ 8 ] ;
+
+  /**
+   * @brief This member contains the additional register windows according to
+   *   the saved WIM.
+   */
+  SPARC_Register_window windows[ SPARC_NUMBER_OF_REGISTER_WINDOWS - 1 ];
+
+#if SPARC_HAS_FPU == 1
+  /** This member contain the FSR register value. */
+  uint32_t fsr;
+
+  /** @brief This member contains the floating point 0..31 register values. */
+  uint64_t fp[ 16 ];
+#endif
 } CPU_Exception_frame;
 
 void _CPU_Exception_frame_print( const CPU_Exception_frame *frame );

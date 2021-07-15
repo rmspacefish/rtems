@@ -64,7 +64,7 @@ static void bsp_debug_uart_init(void)
 
   /* Find APBUART core for System Debug Console */
   i = grlib_debug_uart_index;
-  adev = (void *)ambapp_for_each(&ambapp_plb, (OPTIONS_ALL|OPTIONS_APB_SLVS),
+  adev = (void *)ambapp_for_each(ambapp_plb(), (OPTIONS_ALL|OPTIONS_APB_SLVS),
                                  VENDOR_GAISLER, GAISLER_APBUART,
                                  ambapp_find_by_idx, (void *)&i);
   if (adev) {
@@ -100,7 +100,8 @@ static void bsp_out_char(char c)
     */
   }
 
-  apbuart_outbyte_polled(grlib_debug_uart, c, 1, 1);
+  apbuart_outbyte_polled(grlib_debug_uart, c);
+  apbuart_outbyte_wait(grlib_debug_uart);
 }
 
 /*

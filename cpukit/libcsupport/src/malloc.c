@@ -30,11 +30,9 @@ void *malloc(
 {
   void        *return_this;
 
-  /*
-   * Validate the parameters
-   */
-  if ( !size )
-    return (void *) 0;
+  if ( size == 0 ) {
+    return NULL;
+  }
 
   return_this = rtems_heap_allocate_aligned_with_boundary( size, 0, 0 );
   if ( !return_this ) {

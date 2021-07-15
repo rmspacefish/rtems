@@ -31,8 +31,6 @@
  * @{
  */
 
-#define BSP_INTERRUPT_VECTOR_MIN 0
-
 /*
  *  Interrupt Vector Numbers
  *
@@ -81,7 +79,7 @@
 #define MALTA_PCI_ADP_LAST            MALTA_PCI_ADP31
 #
 
-#define BSP_INTERRUPT_VECTOR_MAX   MALTA_PCI_ADP_LAST
+#define BSP_INTERRUPT_VECTOR_COUNT   (MALTA_PCI_ADP_LAST + 1)
 
 /*
  * Redefine interrupts with more descriptive names.

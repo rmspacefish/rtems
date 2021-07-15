@@ -21,8 +21,7 @@
 #include <rtems/score/processormask.h>
 
 #define BSP_INTERRUPT_VECTOR_MAX_STD 15 /* Standard IRQ controller */
-#define BSP_INTERRUPT_VECTOR_MIN 0
-#define BSP_INTERRUPT_VECTOR_MAX BSP_INTERRUPT_VECTOR_MAX_STD
+#define BSP_INTERRUPT_VECTOR_COUNT (BSP_INTERRUPT_VECTOR_MAX_STD + 1)
 
 /* No extra check is needed */
 #undef BSP_INTERRUPT_CUSTOM_VALID_VECTOR

@@ -30,7 +30,6 @@ librtemsbsp_a_SOURCES += ../../../../../../bsps/shared/dev/getentropy/getentropy
 librtemsbsp_a_SOURCES += ../../../../../../bsps/shared/start/gettargethash-default.c
 librtemsbsp_a_SOURCES += ../../../../../../bsps/shared/start/sbrk.c
 librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon2/start/setvec.c
-librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon2/start/spurious.c
 librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon2/start/bspidle.c
 librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon2/start/bspdelay.c
 librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/shared/start/bsp_fatal_exit.c
@@ -63,11 +62,6 @@ librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/shared/drvmgr/leon2_amba_b
 if HAS_SMP
 librtemsbsp_a_SOURCES += ../../../../../../bsps/shared/start/bspsmp-dummy.c
 librtemsbsp_a_SOURCES += ../../../../../../bsps/shared/start/getcurrentprocessor-zero.c
-endif
-
-if HAS_NETWORKING
-librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon2/net/leon_smc91111.c
-librtemsbsp_a_SOURCES += ../../../../../../bsps/sparc/leon2/net/leon_open_eth.c
 endif
 
 

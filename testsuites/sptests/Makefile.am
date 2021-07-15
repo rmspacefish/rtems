@@ -753,15 +753,6 @@ spcontext01_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_FLAGS_spcontext01) \
 	$(support_includes)
 endif
 
-if TEST_spcoverage
-sp_tests += spcoverage
-sp_screens += spcoverage/spcoverage.scn
-sp_docs += spcoverage/spcoverage.doc
-spcoverage_SOURCES = spcoverage/init.c
-spcoverage_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_FLAGS_spcoverage) \
-	$(support_includes) -I$(top_srcdir)/include
-endif
-
 if TEST_spcpucounter01
 sp_tests += spcpucounter01
 sp_screens += spcpucounter01/spcpucounter01.scn
@@ -1943,7 +1934,9 @@ endif
 if TEST_splinkersets01
 sp_libs += libsplinkersets01.a
 libsplinkersets01_a_SOURCES = splinkersets01/sets.c \
-	splinkersets01/items.c
+	splinkersets01/content.c \
+	splinkersets01/item-a.c \
+	splinkersets01/item-ca.c
 endif
 
 noinst_PROGRAMS = $(sp_tests)

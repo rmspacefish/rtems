@@ -1,25 +1,37 @@
+/* SPDX-License-Identifier: BSD-2-Clause */
+
 /**
  * @file
  *
  * @ingroup bsp_interrupt
  *
- * @brief Generic BSP interrupt support implementation.
+ * @brief This source file contains the generic interrupt controller support
+ *   implementation.
  */
 
 /*
- * Based on concepts of Pavel Pisa, Till Straumann and Eric Valette.
+ * Copyright (C) 2008, 2018 embedded brains GmbH (http://www.embedded-brains.de)
  *
- * Copyright (c) 2008, 2018 embedded brains GmbH.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  *
- *  embedded brains GmbH
- *  Dornierstr. 4
- *  82178 Puchheim
- *  Germany
- *  <rtems@embedded-brains.de>
- *
- * The license and distribution terms for this file may be
- * found in the file LICENSE in this distribution or at
- * http://www.rtems.org/license/LICENSE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <bsp/irq-generic.h>
@@ -32,7 +44,7 @@
 
 #ifdef BSP_INTERRUPT_USE_INDEX_TABLE
   bsp_interrupt_handler_index_type bsp_interrupt_handler_index_table
-    [BSP_INTERRUPT_VECTOR_NUMBER];
+    [BSP_INTERRUPT_VECTOR_COUNT];
 #endif
 
 bsp_interrupt_handler_entry bsp_interrupt_handler_table
@@ -127,34 +139,6 @@ static inline bool bsp_interrupt_allocate_handler_index(
   #else
     *index = bsp_interrupt_handler_index(vector);
     return true;
-  #endif
-}
-
-static bsp_interrupt_handler_entry *bsp_interrupt_allocate_handler_entry(void)
-{
-  bsp_interrupt_handler_entry *e;
-
-  #ifdef BSP_INTERRUPT_NO_HEAP_USAGE
-    rtems_vector_number index = 0;
-
-    if (bsp_interrupt_allocate_handler_index(0, &index)) {
-      e = &bsp_interrupt_handler_table [index];
-    } else {
-      e = NULL;
-    }
-  #else
-    e = rtems_malloc(sizeof(*e));
-  #endif
-
-  return e;
-}
-
-static void bsp_interrupt_free_handler_entry(bsp_interrupt_handler_entry *e)
-{
-  #ifdef BSP_INTERRUPT_NO_HEAP_USAGE
-    bsp_interrupt_clear_handler_entry(e, 0);
-  #else
-    free(e);
   #endif
 }
 
@@ -306,7 +290,7 @@ static rtems_status_code bsp_interrupt_handler_install(
       }
 
       /* Allocate a new entry */
-      current = bsp_interrupt_allocate_handler_entry();
+      current = rtems_malloc(sizeof(*current));
       if (current == NULL) {
         /* Not enough memory */
         bsp_interrupt_unlock();
@@ -421,7 +405,7 @@ static rtems_status_code bsp_interrupt_handler_remove(
       match->next = current->next;
       bsp_interrupt_enable(level);
 
-      bsp_interrupt_free_handler_entry(current);
+      free(current);
     } else if (match == head) {
       /*
        * The match is the list head and has no successor.
@@ -453,7 +437,7 @@ static rtems_status_code bsp_interrupt_handler_remove(
       bsp_interrupt_fence(ATOMIC_ORDER_RELEASE);
       bsp_interrupt_enable(level);
 
-      bsp_interrupt_free_handler_entry(match);
+      free(match);
     }
   } else {
     /* No matching entry found */
